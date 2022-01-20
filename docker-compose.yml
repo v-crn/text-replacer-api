@@ -1,0 +1,14 @@
+version: '3'
+services: 
+  text-replacer-api:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      target: dev
+    ports:
+      - 5000:5000
+    volumes:
+      - ./app:/root/app
+      - ./tests:/root/tests
+    env_file: .env
+    command: bash -c "exec uvicorn --reload --port 5000 --host 0.0.0.0 app.main:app"

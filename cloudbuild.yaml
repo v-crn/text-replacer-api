@@ -1,0 +1,47 @@
+steps:
+  - id: build image
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "--target",
+        "${_TARGET}",
+        "-t",
+        "gcr.io/${_PROJECT}/${_IMAGE}:latest",
+        "-f",
+        "./Dockerfile",
+        "--cache-from",
+        "gcr.io/${_PROJECT}/${_IMAGE}:latest",
+        ".",
+      ]
+  - id: push image
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/${_PROJECT}/${_IMAGE}:latest"]
+  - id: run deploy
+    name: "gcr.io/cloud-builders/gcloud"
+    args: [
+        "beta",
+        "run",
+        "deploy",
+        "${_SERVICE}",
+        "--image",
+        "gcr.io/${_PROJECT}/${_IMAGE}",
+        "--region",
+        "${_REGION}",
+        "--platform",
+        "managed",
+        "--memory",
+        "${_MEMORY}",
+        "--max-instances",
+        "${_MAX_INSTANCES}",
+        "--allow-unauthenticated",
+        "--concurrency",
+        "${_CONCURRENCY}",
+        "--update-env-vars",
+        "API_SERVICE_NAME=${_SERVICE},
+        API_VERSION=${_VERSION},
+        DEBUG=${_DEBUG}",
+      ]
+timeout: 1800s
+options:
+  substitution_option: "MUST_MATCH"
